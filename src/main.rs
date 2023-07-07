@@ -3,12 +3,9 @@
 
 #![deny(warnings, clippy::nursery, clippy::cargo, unused_extern_crates)]
 
-#[cfg_attr(not(target_os = "windows"), allow(dead_code))]
-const APPLE_BOOT_VAR_GUID: &str = "7C436110-AB2A-4BBB-A880-FE41995C9F82";
-#[cfg_attr(
-    all(not(target_os = "windows"), not(target_os = "macos")),
-    allow(dead_code)
-)]
+#[cfg(target_os = "windows")]
+const APPLE_BOOT_VAR_GUID: &str = "{7C436110-AB2A-4BBB-A880-FE41995C9F82}";
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 const AAPL_PANIC_INFO: &str = "aapl,panic-info";
 
 #[cfg(target_os = "windows")]
