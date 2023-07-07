@@ -47,7 +47,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
 }
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
-fn read_from_nvram() -> Option<Vec<u8>> {
+const fn read_from_nvram() -> Option<Vec<u8>> {
     None
 }
 
