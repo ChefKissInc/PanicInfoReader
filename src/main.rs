@@ -9,13 +9,12 @@ const AAPL_PANIC_INFO: &str = "aapl,panic-info";
 
 #[cfg(target_os = "windows")]
 fn read_from_nvram() -> Option<Vec<u8>> {
-    let lpname = windows::core::PCSTR::from_raw(AAPL_PANIC_INFO.as_ptr());
-    let lpguid = windows::core::PCSTR::from_raw(APPLE_BOOT_VAR_GUID.as_ptr());
-    let size = unsafe {
-        windows::Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableA(
-            lpname, lpguid, None, 0,
-        )
+    use windows::{
+        core::PCSTR, Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableA,
     };
+    let lpname = PCSTR::from_raw(AAPL_PANIC_INFO.as_ptr());
+    let lpguid = PCSTR::from_raw(APPLE_BOOT_VAR_GUID.as_ptr());
+    let size = unsafe { GetFirmwareEnvironmentVariableA(lpname, lpguid, None, 0) };
     if size == 0 {
         return None;
     }
