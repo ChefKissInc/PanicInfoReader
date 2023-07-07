@@ -15,11 +15,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
     };
     let lpname = PCSTR::from_raw(AAPL_PANIC_INFO.as_ptr());
     let lpguid = PCSTR::from_raw(APPLE_BOOT_VAR_GUID.as_ptr());
-    let size = unsafe { GetFirmwareEnvironmentVariableA(lpname, lpguid, None, 0) };
-    if size == 0 {
-        return None;
-    }
-    let mut buf = vec![0u8; size as usize];
+    let mut buf = vec![0u8; 512];
     let size = unsafe {
         GetFirmwareEnvironmentVariableA(lpname, lpguid, Some(buf.as_mut_ptr().cast()), size)
     };
