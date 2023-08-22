@@ -11,7 +11,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
                 FormatMessageW, GetLastError, FORMAT_MESSAGE_FROM_SYSTEM,
                 FORMAT_MESSAGE_IGNORE_INSERTS,
             },
-            w, PWSTR,
+            w,
         },
         Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableW,
     };
@@ -33,7 +33,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
                     core::ptr::null(),
                     err,
                     0,
-                    PWSTR::from_raw(buff.as_mut_ptr()),
+                    buff.as_mut_ptr().cast(),
                     (buff_size + 1) as u32,
                     core::ptr::null_mut(),
                 )
