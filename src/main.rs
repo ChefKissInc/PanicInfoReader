@@ -4,12 +4,17 @@
 #![deny(warnings, clippy::nursery, clippy::cargo, unused_extern_crates)]
 
 #[cfg(target_os = "windows")]
-#[macro_use]
-extern crate windows;
-
-#[cfg(target_os = "windows")]
 fn read_from_nvram() -> Option<Vec<u8>> {
-    use windows::Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableA;
+    use windows::{
+        core::{
+            imp::{
+                FormatMessageW, GetLastError, FORMAT_MESSAGE_FROM_SYSTEM,
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+            },
+            w, PWSTR,
+        },
+        Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableW,
+    };
     let name = w!("aapl,panic-info");
     let guid = w!("{7C436110-AB2A-4BBB-A880-FE41995C9F82}");
     let mut buf = vec![0u8; 65476];
