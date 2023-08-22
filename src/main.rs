@@ -1,25 +1,56 @@
-//  Copyright © 2022-2023 ChefKiss Inc. Licensed under the Thou Shalt Not Profit License version 1.0. See LICENSE for
+//  Copyright © 2023 ChefKiss Inc. Licensed under the Thou Shalt Not Profit License version 1.5. See LICENSE for
 //  details.
 
 #![deny(warnings, clippy::nursery, clippy::cargo, unused_extern_crates)]
 
 #[cfg(target_os = "windows")]
-static APPLE_BOOT_VAR_GUID: &str = "{7C436110-AB2A-4BBB-A880-FE41995C9F82}";
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-static AAPL_PANIC_INFO: &str = "aapl,panic-info";
+#[macro_use]
+extern crate windows;
 
 #[cfg(target_os = "windows")]
 fn read_from_nvram() -> Option<Vec<u8>> {
-    use windows::{
-        core::PCSTR, Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableA,
-    };
-    let lpname = PCSTR::from_raw(AAPL_PANIC_INFO.as_ptr());
-    let lpguid = PCSTR::from_raw(APPLE_BOOT_VAR_GUID.as_ptr());
+    use windows::Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableA;
+    let name = w!("aapl,panic-info");
+    let guid = w!("{7C436110-AB2A-4BBB-A880-FE41995C9F82}");
     let mut buf = vec![0u8; 65476];
     let size = unsafe {
-        GetFirmwareEnvironmentVariableA(lpname, lpguid, Some(buf.as_mut_ptr().cast()), 65476)
+        GetFirmwareEnvironmentVariableW(name, guid, Some(buf.as_mut_ptr().cast()), 65476)
     };
     if size == 0 {
+        let err = unsafe { GetLastError() };
+        let err_string = 'a: {
+            let mut buff = [0u16; 256];
+            let buff_size = 256;
+
+            let chars_copied = unsafe {
+                FormatMessageW(
+                    FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM | 8192,
+                    core::ptr::null(),
+                    err,
+                    0,
+                    PWSTR::from_raw(buff.as_mut_ptr()),
+                    (buff_size + 1) as u32,
+                    core::ptr::null_mut(),
+                )
+            };
+
+            if chars_copied == 0 {
+                break 'a None;
+            }
+
+            let mut curr_char = chars_copied as usize;
+            while curr_char > 0 {
+                let ch = buff[curr_char];
+
+                if ch >= ' ' as u16 {
+                    break;
+                }
+                curr_char -= 1;
+            }
+
+            String::from_utf16(&buff).ok()
+        };
+        eprintln!("Error: {}", err_string.unwrap_or_else(|| err.to_string()));
         return None;
     }
     buf.truncate(size as usize);
@@ -30,14 +61,14 @@ fn read_from_nvram() -> Option<Vec<u8>> {
 fn read_from_nvram() -> Option<Vec<u8>> {
     let output = std::process::Command::new("nvram")
         .arg("-x")
-        .arg(AAPL_PANIC_INFO)
+        .arg("aapl,panic-info")
         .output()
         .ok()?;
     if !output.status.success() {
         return None;
     }
     let d: plist::Dictionary = plist::from_bytes(&output.stdout).ok()?;
-    d.get(AAPL_PANIC_INFO)
+    d.get("aapl,panic-info")
         .and_then(|v| v.as_data())
         .map(|v| v.to_vec())
 }
