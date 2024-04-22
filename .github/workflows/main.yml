@@ -54,11 +54,11 @@ jobs:
           toolchain: nightly
           command: build
           args: --release -Zunstable-options --out-dir=out
-      - uses: actions/upload-artifact@v4.3.2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: macOS Debug
           path: out-debug/*
-      - uses: actions/upload-artifact@v4.3.2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: macOS Release
           path: out/*
@@ -84,11 +84,11 @@ jobs:
           toolchain: nightly
           command: build
           args: --release -Zunstable-options --out-dir=out
-      - uses: actions/upload-artifact@v4.3.2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: Windows Debug
           path: out-debug/*
-      - uses: actions/upload-artifact@v4.3.2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: Windows Release
           path: out/*
