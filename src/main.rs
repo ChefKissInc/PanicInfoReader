@@ -5,16 +5,7 @@
 
 #[cfg(target_os = "windows")]
 fn read_from_nvram() -> Option<Vec<u8>> {
-    use windows::{
-        core::{
-            imp::{
-                FormatMessageW, GetLastError, FORMAT_MESSAGE_FROM_SYSTEM,
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-            },
-            w,
-        },
-        Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableW,
-    };
+    use windows::{core::w, Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableW};
     let name = w!("aapl,panic-info");
     let guid = w!("{7C436110-AB2A-4BBB-A880-FE41995C9F82}");
     let mut buf = vec![0u8; 65476];
@@ -22,40 +13,8 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         GetFirmwareEnvironmentVariableW(name, guid, Some(buf.as_mut_ptr().cast()), 65476)
     };
     if size == 0 {
-        let err = unsafe { GetLastError() };
-        let err_string = 'a: {
-            let mut buff = [0u16; 256];
-            let buff_size = 256;
-
-            let chars_copied = unsafe {
-                FormatMessageW(
-                    FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM | 8192,
-                    core::ptr::null(),
-                    err,
-                    0,
-                    buff.as_mut_ptr().cast(),
-                    (buff_size + 1) as u32,
-                    core::ptr::null_mut(),
-                )
-            };
-
-            if chars_copied == 0 {
-                break 'a None;
-            }
-
-            let mut curr_char = chars_copied as usize;
-            while curr_char > 0 {
-                let ch = buff[curr_char];
-
-                if ch >= ' ' as u16 {
-                    break;
-                }
-                curr_char -= 1;
-            }
-
-            String::from_utf16(&buff).ok()
-        };
-        eprintln!("Error: {}", err_string.unwrap_or_else(|| err.to_string()));
+        let err = windows::core::Error::from_win32();
+        eprintln!("Error: {}", err.message());
         return None;
     }
     buf.truncate(size as usize);
