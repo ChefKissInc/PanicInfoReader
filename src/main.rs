@@ -3,6 +3,8 @@
 
 #![deny(warnings, clippy::nursery, clippy::cargo, unused_extern_crates)]
 
+use std::process::ExitCode;
+
 #[cfg(target_os = "windows")]
 fn read_from_nvram() -> Option<Vec<u8>> {
     use windows::{core::w, Win32::System::WindowsProgramming::GetFirmwareEnvironmentVariableW};
@@ -14,7 +16,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
     };
     if size == 0 {
         let err = windows::core::Error::from_win32();
-        eprintln!("Error: {}", err.message());
+        eprintln!("Failed to read panic info from NVRAM: {}", err.message());
         return None;
     }
     buf.truncate(size as usize);
@@ -30,7 +32,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         .ok()?;
     if !output.status.success() {
         if let Ok(err_msg) = std::str::from_utf8(&output.stderr) {
-            eprintln!("Error: {}", err_msg.trim());
+            eprintln!("Failed to read panic info from NVRAM: {}", err_msg.trim());
         }
         return None;
     }
@@ -45,20 +47,36 @@ const fn read_from_nvram() -> Option<Vec<u8>> {
     None
 }
 
-fn main() {
+fn main() -> ExitCode {
     let data = if let Some(path) = std::env::args().nth(1) {
-        match std::fs::read(path) {
-            Ok(v) => v,
-            Err(e) => {
-                eprintln!("Error: {e}");
-                eprintln!("Failed to read file");
-                return;
+        match plist::from_file::<_, plist::Dictionary>(&path) {
+            Ok(v) => {
+                let Some(key) = v.keys().find(|v| v.to_lowercase() == "aapl,panic-info") else {
+                    eprintln!("Plist specified does not contain panic info");
+                    return ExitCode::FAILURE;
+                };
+                let Some(data) = v.get(key).unwrap().as_data() else {
+                    eprintln!("Plist panic info key is not of type Data");
+                    return ExitCode::FAILURE;
+                };
+                data.to_owned()
             }
+            Err(e) => match std::fs::read(path) {
+                Ok(v) => {
+                    eprintln!("Warning: Failed to read file as plist: {e}");
+                    eprintln!("Decompressing as raw data instead");
+                    eprintln!();
+                    v
+                }
+                Err(e) => {
+                    eprintln!("Failed to read file: {e}");
+                    return ExitCode::FAILURE;
+                }
+            },
         }
     } else {
         let Some(v) = read_from_nvram() else {
-            eprintln!("Failed to read panic info from NVRAM");
-            return;
+            return ExitCode::FAILURE;
         };
         v
     };
@@ -113,4 +131,6 @@ fn main() {
         bit += 1;
     }
     println!("{s}");
+
+    ExitCode::SUCCESS
 }

@@ -4,7 +4,7 @@ name = "panic-info-reader"
 publish = false
 version = "0.1.0"
 
-[target.'cfg(target_os = "macos")'.dependencies]
+[dependencies]
 plist = "1.7.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
