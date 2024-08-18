@@ -29,6 +29,9 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         .output()
         .ok()?;
     if !output.status.success() {
+        if let Ok(err_msg) = std::str::from_utf8(&output.stderr) {
+            eprintln!("Error: {}", err_msg.trim());
+        }
         return None;
     }
     let d: plist::Dictionary = plist::from_bytes(&output.stdout).ok()?;
@@ -43,11 +46,22 @@ const fn read_from_nvram() -> Option<Vec<u8>> {
 }
 
 fn main() {
-    let data = std::env::args()
-        .nth(1)
-        .and_then(|v| std::fs::read(v).ok())
-        .or_else(read_from_nvram)
-        .expect("No aapl,panic-info data");
+    let data = if let Some(path) = std::env::args().nth(1) {
+        match std::fs::read(path) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("Error: {e}");
+                eprintln!("Failed to read file");
+                return;
+            }
+        }
+    } else {
+        let Some(v) = read_from_nvram() else {
+            eprintln!("Failed to read panic info from NVRAM");
+            return;
+        };
+        v
+    };
     let mut s = String::new();
     let mut expand_kext_info = false;
     let mut prev = 0;
