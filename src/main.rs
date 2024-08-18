@@ -49,10 +49,18 @@ fn main() {
         .or_else(read_from_nvram)
         .expect("No aapl,panic-info data");
     let mut s = String::new();
+    let mut expand_kext_info = false;
     let mut prev = 0;
     let mut low = 0;
     let mut bit = 0;
     let mut add_char = |c: u8| {
+        if !expand_kext_info {
+            expand_kext_info = s.ends_with("loaded kext");
+            if !expand_kext_info {
+                s.push(c.into());
+                return;
+            }
+        }
         let v = match (prev, c) {
             (_, b'>') => "com.apple.driver.",
             (_, b'|') => "com.apple.iokit.",
@@ -69,7 +77,7 @@ fn main() {
             (b'!', b'U') => "AppleUSB",
             _ => {
                 prev = c;
-                s.push(char::from(c));
+                s.push(c.into());
                 return;
             }
         };
