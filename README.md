@@ -4,4 +4,4 @@ A command line tool that can decompress a XNU panic either from the `aapl,panic-
 
 The PanicInfoReader project is licensed under the `Thou Shalt Not Profit License version 1.5`. See `LICENSE`
 
-Supports macOS and Windows. Linux support soon.
+Supports macOS, Windows and Linux.

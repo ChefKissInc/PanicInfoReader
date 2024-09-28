@@ -39,10 +39,31 @@ fn read_from_nvram() -> Option<Vec<u8>> {
     let d: plist::Dictionary = plist::from_bytes(&output.stdout).ok()?;
     d.get("aapl,panic-info")
         .and_then(|v| v.as_data())
-        .map(|v| v.to_vec())
+        .map(<[u8]>::to_vec)
 }
 
-#[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+#[cfg(all(unix, not(target_os = "macos")))]
+fn read_from_nvram() -> Option<Vec<u8>> {
+    std::fs::read("/sys/firmware/efi/efivars/aapl,panic-info-7c436110-ab2a-4bbb-a880-fe41995c9f82")
+        .or_else(|_| {
+            std::fs::read(
+                "/sys/firmware/efi/efivars/AAPL,panic-info-7c436110-ab2a-4bbb-a880-fe41995c9f82",
+            )
+        })
+        .or_else(|_| {
+            std::fs::read(
+                "/sys/firmware/efi/efivars/AAPL,Panic-Info-7c436110-ab2a-4bbb-a880-fe41995c9f82",
+            )
+        })
+        .or_else(|_| {
+            std::fs::read(
+                "/sys/firmware/efi/efivars/AAPL,PanicInfo-7c436110-ab2a-4bbb-a880-fe41995c9f82",
+            )
+        })
+        .ok()
+}
+
+#[cfg(all(not(target_os = "windows"), not(target_os = "macos"), not(unix)))]
 const fn read_from_nvram() -> Option<Vec<u8>> {
     None
 }
