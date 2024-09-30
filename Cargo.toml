@@ -4,6 +4,11 @@ name = "panic-info-reader"
 publish = false
 version = "0.1.0"
 
+[profile.release]
+lto = true
+opt-level = 3
+strip = true
+
 [dependencies]
 plist = "1.7.0"
 
