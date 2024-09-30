@@ -54,6 +54,24 @@ jobs:
           name: macOS Apple Silicon Release
           path: target/aarch64-apple-darwin/release/panic-info-reader
 
+  build:
+    name: Build Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo build
+      - run: cargo build --release
+      - uses: actions/upload-artifact@v4.4.0
+        with:
+          name: Linux Debug
+          path: target/debug/panic-info-reader
+      - uses: actions/upload-artifact@v4.4.0
+        with:
+          name: Linux Release
+          path: target/release/panic-info-reader
+
   build-windows:
     name: Build Windows
     runs-on: windows-latest
