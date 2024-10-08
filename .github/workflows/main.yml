@@ -37,19 +37,19 @@ jobs:
       - run: cargo build --target aarch64-apple-darwin
       - run: cargo build --target x86_64-apple-darwin --release
       - run: cargo build --target aarch64-apple-darwin --release
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: macOS Debug
           path: target/x86_64-apple-darwin/debug/panic-info-reader
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: macOS Apple Silicon Debug
           path: target/aarch64-apple-darwin/debug/panic-info-reader
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: macOS Release
           path: target/x86_64-apple-darwin/release/panic-info-reader
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: macOS Apple Silicon Release
           path: target/aarch64-apple-darwin/release/panic-info-reader
@@ -63,11 +63,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - run: cargo build
       - run: cargo build --release
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: Linux Debug
           path: target/debug/panic-info-reader
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: Linux Release
           path: target/release/panic-info-reader
@@ -81,11 +81,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - run: cargo build -Zunstable-options --out-dir=out-debug
       - run: cargo build --release -Zunstable-options --out-dir=out
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: Windows Debug
           path: out-debug/*
-      - uses: actions/upload-artifact@v4.4.0
+      - uses: actions/upload-artifact@v4.4.1
         with:
           name: Windows Release
           path: out/*
