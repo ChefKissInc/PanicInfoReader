@@ -18,8 +18,8 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         let mut data = Vec::new();
         let mut i = 0;
         loop {
-            let name = w!(format!("AAPL,PanicInfo{i:04x}"));
-            let guid = w!("{7C436110-AB2A-4BBB-A880-FE41995C9F82}");
+            let name_s = format!("AAPL,PanicInfo{i:04x}");
+            let name = windows_strings::BSTR::from(&name_s);
             let size = unsafe {
                 GetFirmwareEnvironmentVariableW(name, guid, Some(buf.as_mut_ptr().cast()), 65476)
             };
@@ -35,7 +35,6 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         } else {
             Some(data)
         };
-        return None;
     }
     buf.truncate(size as usize);
     Some(buf)
