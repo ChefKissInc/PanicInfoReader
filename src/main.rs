@@ -27,6 +27,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
                 break;
             }
             data.extend_from_slice(&buf[..size as usize]);
+            i += 1;
         }
         return if data.is_empty() {
             let err = windows::core::Error::from_win32();
