@@ -21,12 +21,12 @@ fn read_from_nvram() -> Option<Vec<u8>> {
             let name_s = format!("AAPL,PanicInfo{i:04x}");
             let name = windows_strings::BSTR::from(&name_s);
             let size = unsafe {
-                GetFirmwareEnvironmentVariableW(name, guid, Some(buf.as_mut_ptr().cast()), 65476)
+                GetFirmwareEnvironmentVariableW(&name, guid, Some(buf.as_mut_ptr().cast()), 65476)
             };
             if size == 0 {
                 break;
             }
-            data.extend_from_slice(&buf[..size]);
+            data.extend_from_slice(&buf[..size as usize]);
         }
         return if data.is_empty() {
             let err = windows::core::Error::from_win32();
