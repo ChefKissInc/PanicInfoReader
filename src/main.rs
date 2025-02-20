@@ -79,7 +79,11 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         data.extend_from_slice(&v[4..]);
         i += 1;
     }
-    return if data.is_empty() { None } else { Some(data) };
+    if data.is_empty() {
+        None
+    } else {
+        Some(data)
+    }
 }
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "macos"), not(unix)))]
