@@ -1,4 +1,4 @@
-// Copyright © 2023-2024 ChefKiss. Licensed under the Thou Shalt Not Profit License version 1.5.
+// Copyright © 2023-2025 ChefKiss. Licensed under the Thou Shalt Not Profit License version 1.5.
 // See LICENSE for details.
 
 #![deny(warnings, clippy::nursery, clippy::cargo, unused_extern_crates)]
@@ -15,8 +15,26 @@ fn read_from_nvram() -> Option<Vec<u8>> {
         GetFirmwareEnvironmentVariableW(name, guid, Some(buf.as_mut_ptr().cast()), 65476)
     };
     if size == 0 {
-        let err = windows::core::Error::from_win32();
-        eprintln!("Failed to read panic info from NVRAM: {}", err.message());
+        let mut data = Vec::new();
+        let mut i = 0;
+        loop {
+            let name = w!(format!("AAPL,PanicInfo{i:04x}"));
+            let guid = w!("{7C436110-AB2A-4BBB-A880-FE41995C9F82}");
+            let size = unsafe {
+                GetFirmwareEnvironmentVariableW(name, guid, Some(buf.as_mut_ptr().cast()), 65476)
+            };
+            if size == 0 {
+                break;
+            }
+            data.extend_from_slice(&buf[..size]);
+        }
+        return if data.is_empty() {
+            let err = windows::core::Error::from_win32();
+            eprintln!("Failed to read panic info from NVRAM: {}", err.message());
+            None
+        } else {
+            Some(data)
+        };
         return None;
     }
     buf.truncate(size as usize);
@@ -44,23 +62,25 @@ fn read_from_nvram() -> Option<Vec<u8>> {
 
 #[cfg(all(unix, not(target_os = "macos")))]
 fn read_from_nvram() -> Option<Vec<u8>> {
-    std::fs::read("/sys/firmware/efi/efivars/aapl,panic-info-7c436110-ab2a-4bbb-a880-fe41995c9f82")
-        .or_else(|_| {
-            std::fs::read(
-                "/sys/firmware/efi/efivars/AAPL,panic-info-7c436110-ab2a-4bbb-a880-fe41995c9f82",
-            )
-        })
-        .or_else(|_| {
-            std::fs::read(
-                "/sys/firmware/efi/efivars/AAPL,Panic-Info-7c436110-ab2a-4bbb-a880-fe41995c9f82",
-            )
-        })
-        .or_else(|_| {
-            std::fs::read(
-                "/sys/firmware/efi/efivars/AAPL,PanicInfo-7c436110-ab2a-4bbb-a880-fe41995c9f82",
-            )
-        })
-        .ok()
+    if let Ok(mut v) = std::fs::read(
+        "/sys/firmware/efi/efivars/aapl,panic-info-7c436110-ab2a-4bbb-a880-fe41995c9f82",
+    ) {
+        v.drain(0..4);
+        return Some(v);
+    }
+
+    let mut data = Vec::new();
+    let mut i = 0;
+    loop {
+        let Ok(v) = std::fs::read(format!(
+            "/sys/firmware/efi/efivars/AAPL,PanicInfo{i:04x}-7c436110-ab2a-4bbb-a880-fe41995c9f82"
+        )) else {
+            break;
+        };
+        data.extend_from_slice(&v[4..]);
+        i += 1;
+    }
+    return if data.is_empty() { None } else { Some(data) };
 }
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "macos"), not(unix)))]
