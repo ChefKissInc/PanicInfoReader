@@ -30,7 +30,7 @@ fn read_from_nvram() -> Option<Vec<u8>> {
             i += 1;
         }
         return if data.is_empty() {
-            let err = windows::core::Error::from_win32();
+            let err = windows::core::Error::from_thread();
             eprintln!("Failed to read panic info from NVRAM: {}", err.message());
             None
         } else {
