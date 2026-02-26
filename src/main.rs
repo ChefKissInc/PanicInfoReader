@@ -71,12 +71,9 @@ fn read_from_nvram() -> Option<Vec<u8>> {
 
     let mut data = Vec::new();
     let mut i = 0;
-    loop {
-        let Ok(v) = std::fs::read(format!(
-            "/sys/firmware/efi/efivars/AAPL,PanicInfo{i:04x}-7c436110-ab2a-4bbb-a880-fe41995c9f82"
-        )) else {
-            break;
-        };
+    while let Ok(v) = std::fs::read(format!(
+        "/sys/firmware/efi/efivars/AAPL,PanicInfo{i:04x}-7c436110-ab2a-4bbb-a880-fe41995c9f82"
+    )) {
         data.extend_from_slice(&v[4..]);
         i += 1;
     }
