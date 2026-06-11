@@ -17,22 +17,22 @@ jobs:
       - run: xmake f -m release -a arm64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Release (Apple Silicon)
+          name: macOS Release (arm64)
           path: build/macosx/arm64/release/PanicInfoReader
       - run: xmake f -m release -a x86_64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Release (Intel)
+          name: macOS Release (x86_64)
           path: build/macosx/x86_64/release/PanicInfoReader
-      - run: xmake f -m release -a arm64 -y && xmake -y
+      - run: xmake f -m debug -a arm64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Release (Apple Silicon)
+          name: macOS Debug (arm64)
           path: build/macosx/arm64/debug/PanicInfoReader
       - run: xmake f -m debug -a x86_64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Debug (Apple Silicon)
+          name: macOS Debug (x86_64)
           path: build/macosx/x86_64/debug/PanicInfoReader
 
   build-linux:
@@ -45,12 +45,12 @@ jobs:
       - run: xmake f -m release -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: Linux Debug
+          name: Linux Release (x86_64)
           path: build/linux/x86_64/release/PanicInfoReader
       - run: xmake f -m debug -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: Linux Release
+          name: Linux Debug (x86_64)
           path: build/linux/x86_64/debug/PanicInfoReader
 
   build-windows:
@@ -65,10 +65,10 @@ jobs:
       - run: xmake f -m release -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: Windows Debug
-          path: build/windows/x86_64/release/PanicInfoReader
+          name: Windows Release (x86_64)
+          path: build/windows/x86_64/release/PanicInfoReader.exe
       - run: xmake f -m debug -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: Windows Release
-          path: build/windows/x86_64/debug/PanicInfoReader
+          name: Windows Debug (x86_64)
+          path: build/windows/x86_64/debug/PanicInfoReader.exe
