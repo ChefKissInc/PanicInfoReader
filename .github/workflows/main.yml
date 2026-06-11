@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - run: brew install xmake m4 automake autoconf libtool pkgconf
+      - run: brew install xmake m4 automake autoconf libtool
       - run: xmake f -m release -a arm64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
@@ -65,10 +65,10 @@ jobs:
       - run: xmake f -m release -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: Windows Release (x86_64)
-          path: build/windows/x86_64/release/PanicInfoReader.exe
+          name: Windows Release (x64)
+          path: build/windows/x64/release/PanicInfoReader.exe
       - run: xmake f -m debug -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: Windows Debug (x86_64)
-          path: build/windows/x86_64/debug/PanicInfoReader.exe
+          name: Windows Debug (x64)
+          path: build/windows/x64/debug/PanicInfoReader.exe
