@@ -19,15 +19,15 @@ jobs:
         with:
           name: macOS Release (Apple Silicon)
           path: build/macosx/arm64/release/PanicInfoReader
-      - run: xmake f -a x86_64 -y && xmake -y
+      - run: xmake f -m release -a x86_64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
           name: macOS Release (Intel)
           path: build/macosx/x86_64/release/PanicInfoReader
-      - run: xmake f -m debug -a arm64 -y && xmake -y
+      - run: xmake f -m release -a arm64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Debug (Apple Silicon)
+          name: macOS Release (Apple Silicon)
           path: build/macosx/arm64/debug/PanicInfoReader
       - run: xmake f -m debug -a x86_64 -y && xmake -y
       - uses: actions/upload-artifact@v7
