@@ -1,91 +1,78 @@
-name: Run clippy and build
+name: Build
 
 on:
   push:
     branches: [master]
   pull_request:
     branches: [master]
-  schedule:
-    - cron: "19 2 * * 4"
-
-env:
-  CARGO_TERM_COLOR: always
 
 jobs:
-  clippy:
-    name: Lints
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt, clippy
-      - run: cargo fmt --all -- --check
-      - run: cargo clippy
-
   build-macos:
-    name: Build macOS
+    name: Build for macOS
     runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          targets: x86_64-apple-darwin, aarch64-apple-darwin
-      - run: cargo build --target x86_64-apple-darwin
-      - run: cargo build --target aarch64-apple-darwin
-      - run: cargo build --target x86_64-apple-darwin --release
-      - run: cargo build --target aarch64-apple-darwin --release
-      - uses: actions/upload-artifact@v7.0.0
+          xmake-version: latest
+      - run: xmake f -m release -a arm64 && xmake
+      - uses: actions/upload-artifact@v7
         with:
-          name: macOS Debug
-          path: target/x86_64-apple-darwin/debug/panic-info-reader
-      - uses: actions/upload-artifact@v7.0.0
+          name: macOS Release (Apple Silicon)
+          path: build/macosx/arm64/release/PanicInfoReader
+      - run: xmake f -m debug -a arm64 && xmake
+      - uses: actions/upload-artifact@v7
         with:
-          name: macOS Apple Silicon Debug
-          path: target/aarch64-apple-darwin/debug/panic-info-reader
-      - uses: actions/upload-artifact@v7.0.0
+          name: macOS Debug (Apple Silicon)
+          path: build/macosx/arm64/debug/PanicInfoReader
+      - run: xmake f -a x86_64 && xmake
+      - uses: actions/upload-artifact@v7
         with:
-          name: macOS Release
-          path: target/x86_64-apple-darwin/release/panic-info-reader
-      - uses: actions/upload-artifact@v7.0.0
+          name: macOS Release (Intel)
+          path: build/macosx/x86_64/release/PanicInfoReader
+      - run: xmake f -m debug -a x86_64 && xmake
+      - uses: actions/upload-artifact@v7
         with:
-          name: macOS Apple Silicon Release
-          path: target/aarch64-apple-darwin/release/panic-info-reader
+          name: macOS Debug (Apple Silicon)
+          path: build/macosx/x86_64/debug/PanicInfoReader
 
-  build:
-    name: Build Linux
+  build-linux:
+    name: Build for Linux
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo build
-      - run: cargo build --release
-      - uses: actions/upload-artifact@v7.0.0
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+      - run: xmake f -m release && xmake
+      - uses: actions/upload-artifact@v7
         with:
           name: Linux Debug
-          path: target/debug/panic-info-reader
-      - uses: actions/upload-artifact@v7.0.0
+          path: build/linux/x86_64/debug/PanicInfoReader
+      - run: xmake f -m debug && xmake
+      - uses: actions/upload-artifact@v7
         with:
           name: Linux Release
-          path: target/release/panic-info-reader
+          path: build/linux/x86_64/release/PanicInfoReader
 
   build-windows:
-    name: Build Windows
+    name: Build for Windows
     runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo build -Zunstable-options --artifact-dir=out-debug
-      - run: cargo build --release -Zunstable-options --artifact-dir=out
-      - uses: actions/upload-artifact@v7.0.0
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+      - run: xmake f -m release && xmake
+      - uses: actions/upload-artifact@v7
         with:
           name: Windows Debug
-          path: out-debug/*
-      - uses: actions/upload-artifact@v7.0.0
+          path: build/windows/x86_64/debug/PanicInfoReader
+      - run: xmake f -m debug && xmake
+      - uses: actions/upload-artifact@v7
         with:
           name: Windows Release
-          path: out/*
+          path: build/windows/x86_64/release/PanicInfoReader

@@ -1,23 +1,14 @@
-*.orig
-*.BACKUP.*
-*.BASE.*
-*.LOCAL.*
-*.REMOTE.*
-*_BACKUP_*.txt
-*_BASE_*.txt
-*_LOCAL_*.txt
-*_REMOTE_*.txt
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
+### macOS
+# Finder metadata
 .DS_Store
-.AppleDouble
-.LSOverride
-Icon
 
+# Thumbnails
 ._*
+
+# Custom folder icons
+Icon
+
+# Volume root files
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
@@ -25,17 +16,11 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-debug/
-target/
-Cargo.lock
-**/*.rs.bk
-*.pdb
-.vscode
-*.code-workspace
-.history
-.ionide
+
+### clangd
+.cache/
+compile_commands.json
+
+### Xmake
+.xmake/
+build/
