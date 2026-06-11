@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - run: apt-get install xmake m4 automake autoconf libtool
+      - run: sudo apt-get install xmake m4 automake autoconf libtool
       - run: xmake f -m release -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
