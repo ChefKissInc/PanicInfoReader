@@ -1,7 +1,11 @@
 # PanicInfoReader
 
-A command line tool that can decompress a XNU panic either from the `aapl,panic-info` NVRAM variable or from a file.
+Command line utility for extracting/decompressing XNU kernel panics.
 
 The PanicInfoReader project is licensed under the `Thou Shalt Not Profit License version 1.5`. See `LICENSE`
 
-Supports macOS, Windows and Linux.
+Supported sources: `aapl,panic-info` and `AAPL,PanicInfo-xxxx` NVRAM variables, plist with `aapl,panic-info` key, `.panic` and raw binary file.
+
+For the NVRAM reading functionality, execute the utility without arguments.
+
+Supports macOS, Windows, Linux and BSD.
