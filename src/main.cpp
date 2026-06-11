@@ -2,17 +2,23 @@
 // See LICENSE for details.
 
 #include "Platform.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <vector>
-#ifdef CONFIG_ENABLE_LIBPLIST
 #include <plist/plist.h>
-#endif
+#include <vector>
 
 namespace
 {
+
+    // Adapted from StackOverflow. They seriously only added this in C++20, lol.
+    bool stringEndsWith(const std::string& fullString, const std::string& ending)
+    {
+        if (fullString.length() < ending.length()) { return false; }
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+    }
 
     void printCompressedString(const uint8_t* data, const size_t dataSize)
     {
@@ -21,10 +27,10 @@ namespace
         char        prev           = 0;
         auto        low            = 0;
         auto        bit            = 0;
-        auto        addChar        = [&](uint8_t c)
+        auto        addChar        = [&](char c)
         {
             if (!expandKextInfo) {
-                expandKextInfo = s.ends_with("loaded kext");
+                expandKextInfo = stringEndsWith(s, "loaded kext");
                 if (!expandKextInfo) {
                     s.push_back(c);
                     return;
@@ -77,7 +83,6 @@ namespace
         std::cout << s;
     }
 
-#ifdef CONFIG_ENABLE_LIBPLIST
     class PlistParseError : public std::exception
     {
         std::string msg;
@@ -149,7 +154,6 @@ namespace
             }
         }
     };
-#endif
 
     void runWithFile(const char* path)
     {
@@ -160,7 +164,6 @@ namespace
         f.seekg(0, std::ios::beg);
         f.read(data.data(), data.size());
 
-#ifdef CONFIG_ENABLE_LIBPLIST
         try {
             PlistContext ctx(data);
             ctx.run();
@@ -169,7 +172,6 @@ namespace
         catch (const PlistParseError& e) {
             std::cerr << "Warning: " << e.what() << "; interpreting as compressed string.\n";
         }
-#endif
 
         printCompressedString(reinterpret_cast<uint8_t*>(&*data.begin()), data.size());
     }
