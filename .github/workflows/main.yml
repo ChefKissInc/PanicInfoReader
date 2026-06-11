@@ -19,16 +19,16 @@ jobs:
         with:
           name: macOS Release (Apple Silicon)
           path: build/macosx/arm64/release/PanicInfoReader
-      - run: xmake f -m debug -a arm64 -y && xmake -y
-      - uses: actions/upload-artifact@v7
-        with:
-          name: macOS Debug (Apple Silicon)
-          path: build/macosx/arm64/debug/PanicInfoReader
       - run: xmake f -a x86_64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
           name: macOS Release (Intel)
           path: build/macosx/x86_64/release/PanicInfoReader
+      - run: xmake f -m debug -a arm64 -y && xmake -y
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macOS Debug (Apple Silicon)
+          path: build/macosx/arm64/debug/PanicInfoReader
       - run: xmake f -m debug -a x86_64 -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
@@ -46,12 +46,12 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: Linux Debug
-          path: build/linux/x86_64/debug/PanicInfoReader
+          path: build/linux/x86_64/release/PanicInfoReader
       - run: xmake f -m debug -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
           name: Linux Release
-          path: build/linux/x86_64/release/PanicInfoReader
+          path: build/linux/x86_64/debug/PanicInfoReader
 
   build-windows:
     name: Build for Windows
@@ -66,9 +66,9 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: Windows Debug
-          path: build/windows/x86_64/debug/PanicInfoReader
+          path: build/windows/x86_64/release/PanicInfoReader
       - run: xmake f -m debug -y && xmake -y
       - uses: actions/upload-artifact@v7
         with:
           name: Windows Release
-          path: build/windows/x86_64/release/PanicInfoReader
+          path: build/windows/x86_64/debug/PanicInfoReader
