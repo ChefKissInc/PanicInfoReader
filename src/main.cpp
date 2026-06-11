@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <plist/plist.h>
+#include <stdexcept>
 #include <vector>
 
 namespace

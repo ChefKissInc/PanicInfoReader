@@ -3,6 +3,7 @@
 
 #pragma once
 #include <cstdint>
+#include <stdexcept>
 #include <vector>
 // platform headers
 #include <sys/efiio.h>
