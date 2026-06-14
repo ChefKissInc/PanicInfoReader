@@ -1,10 +1,13 @@
-name: Build
+name: Build/Release
 
 on:
   push:
-    branches: [master]
+    branches:
+      - "**"
+    tags:
+      - "v*"
   pull_request:
-    branches: [master]
+  workflow_dispatch:
 
 jobs:
   build-macos:
@@ -16,26 +19,38 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: brew install xmake m4 automake autoconf libtool
-      - run: xmake f -m release -a arm64 -y && xmake -y
+      - run: |
+          xmake f -m release -a arm64 -y && xmake -y
+          cp build/macosx/arm64/release/PanicInfoReader PanicInfoReader-macosx-arm64
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Release (arm64)
-          path: build/macosx/arm64/release/PanicInfoReader
-      - run: xmake f -m release -a x86_64 -y && xmake -y
+          name: macosx-arm64
+          path: PanicInfoReader-macosx-arm64
+          if-no-files-found: 'error'
+      - run: |
+          xmake f -m release -a x86_64 -y && xmake -y
+          cp build/macosx/x86_64/release/PanicInfoReader PanicInfoReader-macosx-x86_64
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Release (x86_64)
-          path: build/macosx/x86_64/release/PanicInfoReader
-      - run: xmake f -m debug -a arm64 -y && xmake -y
+          name: macosx-x86_64
+          path: PanicInfoReader-macosx-x86_64
+          if-no-files-found: 'error'
+      - run: |
+          xmake f -m debug -a arm64 -y && xmake -y
+          cp build/macosx/arm64/debug/PanicInfoReader PanicInfoReader-macosx-arm64-debug
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Debug (arm64)
-          path: build/macosx/arm64/debug/PanicInfoReader
-      - run: xmake f -m debug -a x86_64 -y && xmake -y
+          name: macosx-arm64-debug
+          path: PanicInfoReader-macosx-arm64-debug
+          if-no-files-found: 'error'
+      - run: |
+          xmake f -m debug -a x86_64 -y && xmake -y
+          cp build/macosx/x86_64/debug/PanicInfoReader PanicInfoReader-macosx-x86_64-debug
       - uses: actions/upload-artifact@v7
         with:
-          name: macOS Debug (x86_64)
-          path: build/macosx/x86_64/debug/PanicInfoReader
+          name: macosx-x86_64-debug
+          path: PanicInfoReader-macosx-x86_64-debug
+          if-no-files-found: 'error'
 
   build-linux:
     name: Build for Linux
@@ -45,17 +60,25 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@v6
-      - run: sudo apt-get install xmake m4 automake autoconf libtool
-      - run: xmake f -m release -y && xmake -y
+      - run: |
+        sudo apt-get update
+        sudo apt-get install -y xmake m4 automake autoconf libtool
+      - run: |
+          xmake f -m release -y && xmake -y
+          cp build/linux/x86_64/release/PanicInfoReader PanicInfoReader-linux-x86_64
       - uses: actions/upload-artifact@v7
         with:
-          name: Linux Release (x86_64)
-          path: build/linux/x86_64/release/PanicInfoReader
-      - run: xmake f -m debug -y && xmake -y
+          name: linux-x86_64
+          path: PanicInfoReader-linux-x86_64
+          if-no-files-found: 'error'
+      - run: |
+          xmake f -m debug -y && xmake -y
+          cp build/linux/x86_64/debug/PanicInfoReader PanicInfoReader-linux-x86_64-debug
       - uses: actions/upload-artifact@v7
         with:
-          name: Linux Debug (x86_64)
-          path: build/linux/x86_64/debug/PanicInfoReader
+          name: linux-x86_64-debug
+          path: PanicInfoReader-linux-x86_64-debug
+          if-no-files-found: 'error'
 
   build-windows:
     name: Build for Windows
@@ -68,13 +91,81 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: latest
-      - run: xmake f -m release -y && xmake -y
+      - run: |
+          xmake f -m release -y && xmake -y
+          cp build/windows/x64/release/PanicInfoReader.exe PanicInfoReader-x86_64.exe
       - uses: actions/upload-artifact@v7
         with:
-          name: Windows Release (x64)
-          path: build/windows/x64/release/PanicInfoReader.exe
-      - run: xmake f -m debug -y && xmake -y
+          name: windows-x86_64
+          path: PanicInfoReader-x86_64.exe
+          if-no-files-found: 'error'
+      - run: |
+          xmake f -m debug -y && xmake -y
+          cp build/windows/x64/debug/PanicInfoReader.exe PanicInfoReader-x86_64-debug.exe
       - uses: actions/upload-artifact@v7
         with:
-          name: Windows Debug (x64)
-          path: build/windows/x64/debug/PanicInfoReader.exe
+          name: windows-x86_64-debug
+          path: PanicInfoReader-x86_64-debug.exe
+          if-no-files-found: 'error'
+
+  build-freebsd:
+    name: Build for FreeBSD
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y xmake m4 automake autoconf libtool
+          run: |
+            xmake f -m release -y && xmake -y
+            cp build/freebsd/x86_64/release/PanicInfoReader PanicInfoReader-freebsd-x86_64
+            xmake f -m debug -y && xmake -y
+            cp build/freebsd/x86_64/debug/PanicInfoReader PanicInfoReader-freebsd-x86_64-debug
+      - uses: actions/upload-artifact@v7
+        with:
+          name: freebsd-x86_64
+          path: PanicInfoReader-freebsd-x86_64
+          if-no-files-found: 'error'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: freebsd-x86_64-debug
+          path: PanicInfoReader-freebsd-x86_64-debug
+          if-no-files-found: 'error'
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-macos, build-linux, build-freebsd, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts/
+          merge-multiple: true
+      - name: Upload build
+        run: |
+          shopt -s nullglob
+          files=(artifacts/*)
+          [ ${#files[@]} -gt 0 ] || { echo "No files found"; exit 1; }
+          NOTES=$(awk '/^## '"${{ github.ref_name }}"'$/{flag=1; next} /^## v/{flag=0} flag' CHANGELOG.md | sed 's/^### /## /')
+
+          [ -n "$NOTES" ] || {
+            echo "No changelog entry found for ${{ github.ref_name }}"
+            exit 1
+          }
+
+          echo "$NOTES" | gh release create "${{ github.ref_name }}" "${files[@]}" \
+            -t "${{ github.ref_name }}" \
+            --verify-tag \
+            --fail-on-no-commits \
+            --discussion-category Announcements \
+            -F -
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
