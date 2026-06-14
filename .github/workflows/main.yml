@@ -120,7 +120,7 @@ jobs:
         with:
           usesh: true
           prepare: |
-            pkg install -y m4 automake autoconf libtool curl bash
+            pkg install -y m4 automake autoconf libtool curl bash gmake devtools coreutils
             curl -fsSL https://xmake.io/shget.text | prefix=/usr/local bash
           run: |
             xmake f -m release -y && xmake -y
