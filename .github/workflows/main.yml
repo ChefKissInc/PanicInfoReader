@@ -120,7 +120,7 @@ jobs:
         with:
           usesh: true
           prepare: |
-            pkg install -y xmake m4 automake autoconf libtool
+            pkg install -y xmake-io m4 automake autoconf libtool
           run: |
             xmake f -m release -y && xmake -y
             cp build/bsd/x86_64/release/PanicInfoReader PanicInfoReader-bsd-x86_64
