@@ -16,6 +16,8 @@ target("PanicInfoReader")
     add_packages("libplist")
     if is_plat("macosx") then
         add_frameworks("IOKit", "CoreFoundation")
+    elseif is_plat("windows") then
+        add_syslinks("advapi32")
     end
 target_end()
 
