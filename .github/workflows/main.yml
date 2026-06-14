@@ -108,8 +108,8 @@ jobs:
           path: PanicInfoReader-x86_64-debug.exe
           if-no-files-found: 'error'
 
-  build-freebsd:
-    name: Build for FreeBSD
+  build-bsd:
+    name: Build for BSD
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -123,23 +123,23 @@ jobs:
             pkg install -y xmake m4 automake autoconf libtool
           run: |
             xmake f -m release -y && xmake -y
-            cp build/freebsd/x86_64/release/PanicInfoReader PanicInfoReader-freebsd-x86_64
+            cp build/bsd/x86_64/release/PanicInfoReader PanicInfoReader-bsd-x86_64
             xmake f -m debug -y && xmake -y
-            cp build/freebsd/x86_64/debug/PanicInfoReader PanicInfoReader-freebsd-x86_64-debug
+            cp build/bsd/x86_64/debug/PanicInfoReader PanicInfoReader-bsd-x86_64-debug
       - uses: actions/upload-artifact@v7
         with:
-          name: freebsd-x86_64
-          path: PanicInfoReader-freebsd-x86_64
+          name: bsd-x86_64
+          path: PanicInfoReader-bsd-x86_64
           if-no-files-found: 'error'
       - uses: actions/upload-artifact@v7
         with:
-          name: freebsd-x86_64-debug
-          path: PanicInfoReader-freebsd-x86_64-debug
+          name: bsd-x86_64-debug
+          path: PanicInfoReader-bsd-x86_64-debug
           if-no-files-found: 'error'
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-macos, build-linux, build-freebsd, build-windows]
+    needs: [build-macos, build-linux, build-bsd, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
