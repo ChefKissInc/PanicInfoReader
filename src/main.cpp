@@ -96,90 +96,9 @@ namespace
         const char* what() const noexcept override { return msg.c_str(); }
     };
 
-    struct PlistContext
+    template<typename C>
+    void runWithContext(C& context)
     {
-        plist_t plist{nullptr};
-
-        PlistContext(const std::vector<char>& data)
-        {
-            static const char marker[] = "{\"macOSProcessedStackshotData";
-            const auto        pos      = std::search(data.begin(), data.end(), marker, marker + (sizeof(marker) - 1));
-
-            plist_t plist;
-            if (const auto err = pos == data.end() ?
-                                     plist_from_memory(data.data(), data.size(), &this->plist, NULL) :
-                                     plist_from_memory(&*pos, data.size() - (&*pos - data.data()), &this->plist, NULL);
-                err != PLIST_ERR_SUCCESS)
-            {
-                throw PlistParseError(err);
-            }
-
-            if (plist_get_node_type(this->plist) != PLIST_DICT) {
-                throw std::runtime_error("Root node of plist provided is not a dictionary.\n");
-            }
-        }
-
-        ~PlistContext()
-        {
-            if (this->plist != nullptr) { plist_free(this->plist); }
-        };
-
-        void run()
-        {
-            if (const auto panicStr = plist_dict_get_item(this->plist, "macOSPanicString")) {
-                if (plist_get_node_type(panicStr) != PLIST_STRING) {
-                    throw std::runtime_error("macOSPanicString item in plist is not of string type");
-                }
-
-                uint64_t   panicStrLength = 0;
-                const auto panicStrPtr    = plist_get_string_ptr(panicStr, &panicStrLength);
-                if (!panicStrPtr || panicStrLength == 0) { std::cout << "Empty panic string.\n"; }
-                else {
-                    std::cout << std::string_view(panicStrPtr, panicStrLength);
-                }
-                return;
-            }
-
-            const auto panicData = plist_dict_get_item(this->plist, "aapl,panic-info");
-            if (panicData == nullptr) {
-                throw std::runtime_error("No applicable plist item found (tried macOSPanicString and aapl,panic-info)");
-            }
-            if (plist_get_node_type(panicData) != PLIST_DATA) {
-                throw std::runtime_error("aapl,panic-info item in plist is not of data type");
-            }
-            uint64_t   panicDataLength = 0;
-            const auto panicDataPtr    = plist_get_data_ptr(panicData, &panicDataLength);
-            if (panicDataPtr == nullptr || panicDataLength == 0) { std::cerr << "Empty panic string.\n"; }
-            else {
-                printCompressedString(reinterpret_cast<const uint8_t*>(panicDataPtr), panicDataLength);
-            }
-        }
-    };
-
-    void runWithFile(const char* path)
-    {
-        std::ifstream f(path);
-        if (!f || !f.is_open()) { throw std::runtime_error(std::string("Could not open ") + path); }
-        f.seekg(0, std::ios::end);
-        std::vector<char> data(f.tellg(), 0);
-        f.seekg(0, std::ios::beg);
-        f.read(data.data(), data.size());
-
-        try {
-            PlistContext ctx(data);
-            ctx.run();
-            return;
-        }
-        catch (const PlistParseError& e) {
-            std::cerr << "Warning: " << e.what() << "; interpreting as compressed string.\n";
-        }
-
-        printCompressedString(reinterpret_cast<uint8_t*>(&*data.begin()), data.size());
-    }
-
-    void run()
-    {
-        PlatformContext      context;
         std::vector<uint8_t> fullData;
         for (uint8_t i = 0; i < 16; ++i) {
             char key[]      = "AAPL,PanicInfo0000";
@@ -205,6 +124,93 @@ namespace
         }
     }
 
+    class PListContext
+    {
+        plist_t plist{nullptr};
+
+    public:
+        PListContext(const std::vector<char>& data)
+        {
+            static const char marker[] = "{\"macOSProcessedStackshotData";
+            const auto        pos      = std::search(data.begin(), data.end(), marker, marker + (sizeof(marker) - 1));
+
+            plist_t plist;
+            if (const auto err = pos == data.end() ?
+                                     plist_from_memory(data.data(), data.size(), &this->plist, NULL) :
+                                     plist_from_memory(&*pos, data.size() - (&*pos - data.data()), &this->plist, NULL);
+                err != PLIST_ERR_SUCCESS)
+            {
+                throw PlistParseError(err);
+            }
+
+            if (plist_get_node_type(this->plist) != PLIST_DICT) {
+                plist_free(this->plist);
+                throw std::runtime_error("Root node of plist provided is not a dictionary.\n");
+            }
+        }
+
+        ~PListContext()
+        {
+            if (this->plist != nullptr) { plist_free(this->plist); }
+        };
+
+        std::vector<uint8_t> readProp(const char* key)
+        {
+            const auto prop = plist_dict_get_item(this->plist, key);
+            if (prop == nullptr) { return {}; }
+            if (plist_get_node_type(prop) != PLIST_DATA) {
+                throw std::runtime_error(std::string(key) + " item in plist is not of data type");
+            }
+            uint64_t   dataLength = 0;
+            const auto dataPtr    = plist_get_data_ptr(prop, &dataLength);
+            if (dataPtr == nullptr || dataLength == 0) { return {}; }
+            else {
+                const auto dataBegin = reinterpret_cast<const uint8_t*>(dataPtr);
+                return {dataBegin, dataBegin + dataLength};
+            }
+        }
+
+        void run()
+        {
+            if (const auto panicStr = plist_dict_get_item(this->plist, "macOSPanicString")) {
+                if (plist_get_node_type(panicStr) != PLIST_STRING) {
+                    throw std::runtime_error("macOSPanicString item in plist is not of string type");
+                }
+
+                uint64_t   panicStrLength = 0;
+                const auto panicStrPtr    = plist_get_string_ptr(panicStr, &panicStrLength);
+                if (!panicStrPtr || panicStrLength == 0) { std::cout << "Empty panic string.\n"; }
+                else {
+                    std::cout << std::string_view(panicStrPtr, panicStrLength);
+                }
+                return;
+            }
+
+            runWithContext(*this);
+        }
+    };
+
+    void runWithFile(const char* path)
+    {
+        std::ifstream f(path);
+        if (!f || !f.is_open()) { throw std::runtime_error(std::string("Could not open ") + path); }
+        f.seekg(0, std::ios::end);
+        std::vector<char> data(f.tellg(), 0);
+        f.seekg(0, std::ios::beg);
+        f.read(data.data(), data.size());
+
+        try {
+            PListContext ctx(data);
+            ctx.run();
+            return;
+        }
+        catch (const PlistParseError& e) {
+            std::cerr << "Warning: " << e.what() << "; interpreting as compressed string.\n";
+        }
+
+        printCompressedString(reinterpret_cast<uint8_t*>(&*data.begin()), data.size());
+    }
+
 }    // namespace
 
 int main(int argc, char** argv)
@@ -220,7 +226,8 @@ int main(int argc, char** argv)
             return 0;
         }
 
-        run();
+        PlatformContext context;
+        runWithContext(context);
         return 0;
     }
     catch (const std::exception& e) {
