@@ -11,8 +11,6 @@
 
 class PlatformContext
 {
-    static const char* VENDOR_GUID = "{7C436110-AB2A-4BBB-A880-FE41995C9F82}";
-
 public:
     PlatformContext()
     {
@@ -31,15 +29,15 @@ public:
 
     std::vector<uint8_t> readProp(const char* key)
     {
-        std::vector<uint8_t> buffer(4096, 0);
+        std::vector<uint8_t> ret(4096, 0);
 
         while (true) {
-            const auto size =
-                GetFirmwareEnvironmentVariableA(key, VENDOR_GUID, buffer.data(), static_cast<DWORD>(buffer.size()));
+            const auto size = GetFirmwareEnvironmentVariableA(key, "{7C436110-AB2A-4BBB-A880-FE41995C9F82}", ret.data(),
+                                                              static_cast<DWORD>(ret.size()));
 
             if (size > 0) {
-                buffer.resize(size);
-                return buffer;
+                ret.resize(size);
+                return ret;
             }
 
             const auto err = GetLastError();
@@ -49,7 +47,7 @@ public:
                 throw std::runtime_error("NVRAM not supported on this system (Legacy BIOS)");
             }
             if (err == ERROR_INSUFFICIENT_BUFFER) {
-                buffer.resize(buffer.size() * 2);
+                ret.resize(ret.size() * 2);
                 continue;
             }
 
