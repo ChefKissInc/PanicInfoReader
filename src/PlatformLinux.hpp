@@ -22,7 +22,7 @@ public:
         int fd = open(path.c_str(), O_RDONLY);
         if (fd < 0) {
             if (errno == EACCES || errno == EPERM) {
-                throw std::runtime_error("Insufficient permissions or kernel lockdown prevents reading EFI variables");
+                throw std::runtime_error("Insufficient permissions or kernel lockdown prevents reading NVRAM");
             }
             if (errno == ENOENT) { return {}; }
             throw std::runtime_error("Failed to open NVRAM file. Error code: " + std::to_string(errno));
@@ -44,7 +44,7 @@ public:
 
         if (lseek(fd, 4, SEEK_SET) == (off_t)-1) {
             close(fd);
-            throw std::runtime_error("Failed to seek past NVRAM attributes.");
+            throw std::runtime_error("Failed to seek past NVRAM attributes");
         }
 
         ssize_t bytesRead;
@@ -58,7 +58,7 @@ public:
         if (bytesRead < 0) {
             throw std::runtime_error("Failed to read NVRAM data. Error code: " + std::to_string(errno));
         }
-        if (static_cast<size_t>(bytesRead) != dataSize) { throw std::runtime_error("Partial read on NVRAM data."); }
+        if (static_cast<size_t>(bytesRead) != dataSize) { throw std::runtime_error("Partial read on NVRAM data"); }
 
         return ret;
     }
