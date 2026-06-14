@@ -3,8 +3,8 @@
 
 #include "Platform.hpp"
 #include <algorithm>
+#include <array>
 #include <cstdint>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <plist/plist.h>
@@ -96,14 +96,20 @@ namespace
         const char* what() const noexcept override { return msg.c_str(); }
     };
 
+    std::array<char, 19> infoKeyFromIndex(uint8_t i)
+    {
+        std::array<char, 19> key = {"AAPL,PanicInfo0000"};
+        key[17]                  = i < 10 ? '0' + i : 'A' + i;
+        return key;
+    }
+
     template<typename C>
     void runWithContext(C& context)
     {
         std::vector<uint8_t> fullData;
         for (uint8_t i = 0; i < 16; ++i) {
-            char key[]      = "AAPL,PanicInfo0000";
-            key[17]         = i < 10 ? '0' + i : 'A' + i;
-            const auto data = context.readProp(key);
+            const auto key  = infoKeyFromIndex(i);
+            const auto data = context.readProp(key.data());
             if (data.empty()) { break; }
             fullData.insert(fullData.end(), data.begin(), data.end());
         }
@@ -111,9 +117,8 @@ namespace
             fullData = context.readProp("aapl,panic-info");
             // Work around bug in AppleEFINVRAM.kext
             for (uint8_t i = 10; i < 16; ++i) {
-                char key[]      = "AAPL,PanicInfo0000";
-                key[17]         = 'K' + i;
-                const auto data = context.readProp(key);
+                const auto key  = infoKeyFromIndex(i);
+                const auto data = context.readProp(key.data());
                 if (data.empty()) { break; }
                 fullData.insert(fullData.end(), data.begin(), data.end());
             }
