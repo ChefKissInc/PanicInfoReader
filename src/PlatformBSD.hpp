@@ -9,8 +9,8 @@
 #include <sys/efiio.h>
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/uuid.h>
 #include <unistd.h>
+#include <uuid.h>
 
 class PlatformContext
 {
@@ -46,9 +46,10 @@ public:
     {
         auto               keyEfi = cstrToEfiStr(key);
         struct efi_var_ioc var    = {
-            .vendor   = this->vendor,
             .name     = keyEfi.data(),
             .namesize = keyEfi.size() * sizeof(efi_char),
+            .vendor   = this->vendor,
+            .attrib   = 0,
             .data     = nullptr,
             .datasize = 0,
         };
