@@ -9,10 +9,11 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 
-struct PlatformContext
+class PlatformContext
 {
     io_registry_entry_t optionsNode;
 
+public:
     PlatformContext()
     {
         this->optionsNode = IORegistryEntryFromPath(
@@ -23,7 +24,7 @@ struct PlatformContext
 #endif
             "IODeviceTree:/options");
         if (!this->optionsNode) {
-            throw std::runtime_error("insufficient permissions or nvram is not supported on this system");
+            throw std::runtime_error("Insufficient permissions or NVRAM is not supported on this system");
         }
     }
 
