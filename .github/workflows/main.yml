@@ -61,8 +61,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: |
-        sudo apt-get update
-        sudo apt-get install -y xmake m4 automake autoconf libtool
+          sudo apt-get update
+          sudo apt-get install -y xmake m4 automake autoconf libtool
       - run: |
           xmake f -m release -y && xmake -y
           cp build/linux/x86_64/release/PanicInfoReader PanicInfoReader-linux-x86_64
