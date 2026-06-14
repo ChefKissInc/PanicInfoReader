@@ -123,6 +123,7 @@ jobs:
             pkg install -y m4 automake autoconf libtool curl bash gmake
             curl -fsSL https://xmake.io/shget.text | prefix=/usr/local bash
           run: |
+            export XMAKE_ROOT=y
             xmake f -m release -y && xmake -y
             cp build/bsd/x86_64/release/PanicInfoReader PanicInfoReader-bsd-x86_64
             xmake f -m debug -y && xmake -y
