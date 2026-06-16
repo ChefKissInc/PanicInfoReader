@@ -16,15 +16,14 @@ class PlatformContext
 public:
     PlatformContext()
     {
-        this->optionsNode = IORegistryEntryFromPath(
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
-            kIOMainPortDefault,
-#else
-            kIOMasterPortDefault,
-#endif
-            "IODeviceTree:/options");
+        mach_port_t masterPort;
+        if (const auto err = IOMasterPort(bootstrap_port, &masterPort); err != KERN_SUCCESS) {
+            throw std::runtime_error("Failed to get master port: " + std::to_string(err));
+        }
+
+        this->optionsNode = IORegistryEntryFromPath(masterPort, "IODeviceTree:/options");
         if (!this->optionsNode) {
-            throw std::runtime_error("Insufficient permissions or NVRAM is not supported on this system");
+            throw std::runtime_error("NVRAM is not supported on this system");
         }
     }
 
