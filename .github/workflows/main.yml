@@ -20,36 +20,22 @@ jobs:
       - uses: actions/checkout@v6
       - run: brew install xmake m4 automake autoconf libtool
       - run: |
-          xmake f -m release -a arm64 --target_minver=11.0 -y && xmake -y
-          cp build/macosx/arm64/release/PanicInfoReader PanicInfoReader-macosx-arm64
+          xmake f -m release -a arm64 --target_minver=11.0 -y && xmake
+          xmake f -m release -a x86_64 --target_minver=10.6 -y && xmake
+          lipo -create build/macosx/arm64/release/PanicInfoReader build/macosx/x86_64/release/PanicInfoReader -output PanicInfoReader-macosx-universal
       - uses: actions/upload-artifact@v7
         with:
-          name: macosx-arm64
-          path: PanicInfoReader-macosx-arm64
+          name: macosx-universal
+          path: PanicInfoReader-macosx-universal
           if-no-files-found: 'error'
       - run: |
-          xmake f -m release -a x86_64 --target_minver=10.6 -y && xmake -y
-          cp build/macosx/x86_64/release/PanicInfoReader PanicInfoReader-macosx-x86_64
+          xmake f -m debug -a arm64 --target_minver=11.0 -y && xmake
+          xmake f -m debug -a x86_64 --target_minver=10.6 -y && xmake
+          lipo -create build/macosx/arm64/debug/PanicInfoReader build/macosx/x86_64/debug/PanicInfoReader -output PanicInfoReader-macosx-universal-debug
       - uses: actions/upload-artifact@v7
         with:
-          name: macosx-x86_64
-          path: PanicInfoReader-macosx-x86_64
-          if-no-files-found: 'error'
-      - run: |
-          xmake f -m debug -a arm64 --target_minver=11.0 -y && xmake -y
-          cp build/macosx/arm64/debug/PanicInfoReader PanicInfoReader-macosx-arm64-debug
-      - uses: actions/upload-artifact@v7
-        with:
-          name: macosx-arm64-debug
-          path: PanicInfoReader-macosx-arm64-debug
-          if-no-files-found: 'error'
-      - run: |
-          xmake f -m debug -a x86_64 --target_minver=10.6 -y && xmake -y
-          cp build/macosx/x86_64/debug/PanicInfoReader PanicInfoReader-macosx-x86_64-debug
-      - uses: actions/upload-artifact@v7
-        with:
-          name: macosx-x86_64-debug
-          path: PanicInfoReader-macosx-x86_64-debug
+          name: macosx-universal-debug
+          path: PanicInfoReader-macosx-universal-debug
           if-no-files-found: 'error'
 
   build-linux:
@@ -64,7 +50,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xmake m4 automake autoconf libtool
       - run: |
-          xmake f -m release -y && xmake -y
+          xmake f -m release -y && xmake
           cp build/linux/x86_64/release/PanicInfoReader PanicInfoReader-linux-x86_64
       - uses: actions/upload-artifact@v7
         with:
@@ -72,7 +58,7 @@ jobs:
           path: PanicInfoReader-linux-x86_64
           if-no-files-found: 'error'
       - run: |
-          xmake f -m debug -y && xmake -y
+          xmake f -m debug -y && xmake
           cp build/linux/x86_64/debug/PanicInfoReader PanicInfoReader-linux-x86_64-debug
       - uses: actions/upload-artifact@v7
         with:
@@ -92,7 +78,7 @@ jobs:
         with:
           xmake-version: latest
       - run: |
-          xmake f -m release -y && xmake -y
+          xmake f -m release -y && xmake
           cp build/windows/x64/release/PanicInfoReader.exe PanicInfoReader-x86_64.exe
       - uses: actions/upload-artifact@v7
         with:
@@ -100,7 +86,7 @@ jobs:
           path: PanicInfoReader-x86_64.exe
           if-no-files-found: 'error'
       - run: |
-          xmake f -m debug -y && xmake -y
+          xmake f -m debug -y && xmake
           cp build/windows/x64/debug/PanicInfoReader.exe PanicInfoReader-x86_64-debug.exe
       - uses: actions/upload-artifact@v7
         with:
@@ -124,9 +110,9 @@ jobs:
             curl -fsSL https://xmake.io/shget.text | prefix=/usr/local bash
           run: |
             export XMAKE_ROOT=y
-            xmake f -m release -y && xmake -y
+            xmake f -m release -y && xmake
             cp build/bsd/x86_64/release/PanicInfoReader PanicInfoReader-bsd-x86_64
-            xmake f -m debug -y && xmake -y
+            xmake f -m debug -y && xmake
             cp build/bsd/x86_64/debug/PanicInfoReader PanicInfoReader-bsd-x86_64-debug
       - uses: actions/upload-artifact@v7
         with:
