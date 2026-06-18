@@ -17,7 +17,7 @@ jobs:
       contents: read
       actions: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: brew install xmake m4 automake autoconf libtool
       - run: |
           xmake f -m release -a arm64 --target_minver=11.0 -y && xmake
@@ -45,7 +45,7 @@ jobs:
       contents: read
       actions: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: |
           sudo apt-get update
           sudo apt-get install -y xmake m4 automake autoconf libtool
@@ -73,7 +73,7 @@ jobs:
       contents: read
       actions: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: latest
@@ -101,7 +101,7 @@ jobs:
       contents: read
       actions: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
@@ -132,7 +132,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           path: artifacts/
