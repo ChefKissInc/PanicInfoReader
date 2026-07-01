@@ -15,7 +15,8 @@ class PlatformContext
 public:
     PlatformContext() { }
 
-    std::vector<uint8_t> readProp(const char* key)
+    [[nodiscard]]
+    std::vector<uint8_t> readProp(const char* key) const
     {
         std::string path = std::string("/sys/firmware/efi/efivars/") + key + "-7c436110-ab2a-4bbb-a880-fe41995c9f82";
 

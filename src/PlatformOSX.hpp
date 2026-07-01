@@ -22,14 +22,13 @@ public:
         }
 
         this->optionsNode = IORegistryEntryFromPath(masterPort, "IODeviceTree:/options");
-        if (!this->optionsNode) {
-            throw std::runtime_error("NVRAM is not supported on this system");
-        }
+        if (!this->optionsNode) { throw std::runtime_error("NVRAM is not supported on this system"); }
     }
 
     ~PlatformContext() { IOObjectRelease(this->optionsNode); }
 
-    std::vector<uint8_t> readProp(const char* key)
+    [[nodiscard]]
+    std::vector<uint8_t> readProp(const char* key) const
     {
         const auto keyCF = CFStringCreateWithCString(kCFAllocatorDefault, key, kCFStringEncodingUTF8);
         if (!keyCF) { return {}; }

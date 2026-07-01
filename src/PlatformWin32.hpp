@@ -52,7 +52,8 @@ public:
         }
     }
 
-    std::vector<uint8_t> readProp(const char* key)
+    [[nodiscard]]
+    std::vector<uint8_t> readProp(const char* key) const
     {
         static constexpr size_t MAX_BUFFER_SIZE = 1U << 20;
 

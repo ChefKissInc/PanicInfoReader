@@ -42,7 +42,8 @@ public:
 
     ~PlatformContext() { close(this->fd); }
 
-    std::vector<uint8_t> readProp(const char* key)
+    [[nodiscard]]
+    std::vector<uint8_t> readProp(const char* key) const
     {
         auto               keyEfi = cstrToEfiStr(key);
         struct efi_var_ioc var    = {

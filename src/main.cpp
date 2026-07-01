@@ -26,8 +26,8 @@ namespace
         std::string s;
         auto        expandKextInfo = false;
         char        prev           = 0;
-        auto        low            = 0;
-        auto        bit            = 0;
+        uint8_t     low            = 0;
+        uint8_t     bit            = 0;
         auto        addChar        = [&](char c)
         {
             if (!expandKextInfo) {
@@ -70,10 +70,10 @@ namespace
 
         for (size_t i = 0; i < dataSize; ++i) {
             const auto v = data[i];
-            addChar(((v & (0x7F >> bit)) << bit) | low);
+            addChar(static_cast<char>(((v & (0x7FU >> bit)) << bit) | low));
             low = v >> (7 - bit);
             if (bit == 6) {
-                addChar(low);
+                addChar(static_cast<char>(low));
                 low = 0;
                 bit = 0;
                 continue;
@@ -99,7 +99,7 @@ namespace
     std::array<char, 19> infoKeyFromIndex(uint8_t i)
     {
         std::array<char, 19> key = {"AAPL,PanicInfo0000"};
-        key[17]                  = i < 10 ? '0' + i : 'A' + i;
+        key[17]                  = static_cast<char>(i < 10 ? '0' + i : 'A' + i);
         return key;
     }
 
@@ -139,10 +139,12 @@ namespace
             static const char marker[] = "{\"macOSProcessedStackshotData";
             const auto        pos      = std::search(data.begin(), data.end(), marker, marker + (sizeof(marker) - 1));
 
-            plist_t plist;
-            if (const auto err = pos == data.end() ?
-                                     plist_from_memory(data.data(), data.size(), &this->plist, NULL) :
-                                     plist_from_memory(&*pos, data.size() - (&*pos - data.data()), &this->plist, NULL);
+            if (const auto err =
+                    pos == data.end() ?
+                        plist_from_memory(data.data(), static_cast<uint32_t>(data.size()), &this->plist, NULL) :
+                        plist_from_memory(&*pos,
+                                          static_cast<uint32_t>(data.size() - static_cast<size_t>(&*pos - data.data())),
+                                          &this->plist, NULL);
                 err != PLIST_ERR_SUCCESS)
             {
                 throw PlistParseError(err);
@@ -200,9 +202,9 @@ namespace
         std::ifstream f(path);
         if (!f || !f.is_open()) { throw std::runtime_error(std::string("Could not open ") + path); }
         f.seekg(0, std::ios::end);
-        std::vector<char> data(f.tellg(), 0);
+        std::vector<char> data(static_cast<size_t>(f.tellg()), 0);
         f.seekg(0, std::ios::beg);
-        f.read(data.data(), data.size());
+        f.read(data.data(), static_cast<std::streamsize>(data.size()));
 
         try {
             PListContext ctx(data);
