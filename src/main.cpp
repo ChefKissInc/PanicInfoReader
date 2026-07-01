@@ -11,6 +11,11 @@
 #include <stdexcept>
 #include <vector>
 
+#ifdef _WIN32
+    #include <fcntl.h>
+    #include <io.h>
+#endif
+
 namespace
 {
 
@@ -228,6 +233,10 @@ int main(int argc, char** argv)
     }
 
     try {
+#ifdef _WIN32
+        _setmode(_fileno(stdout), _O_BINARY);
+#endif
+
         if (argc == 2) {
             runWithFile(argv[1]);
             return 0;
