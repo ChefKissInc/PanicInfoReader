@@ -21,7 +21,7 @@ class PlatformContext
     {
         const auto            nChars = strlen(s);
         std::vector<efi_char> ret(nChars + 1, 0);
-        for (size_t i = 0; i < nChars; ++i) { ret[i] = s[i]; }
+        for (size_t i = 0; i < nChars; ++i) { ret[i] = static_cast<efi_char>(s[i]); }
         return ret;
     }
 
@@ -46,14 +46,13 @@ public:
     std::vector<uint8_t> readProp(const char* key) const
     {
         auto               keyEfi = cstrToEfiStr(key);
-        struct efi_var_ioc var    = {
-            .name     = keyEfi.data(),
-            .namesize = keyEfi.size() * sizeof(efi_char),
-            .vendor   = this->vendor,
-            .attrib   = 0,
-            .data     = nullptr,
-            .datasize = 0,
-        };
+        struct efi_var_ioc var{};
+        var.name     = keyEfi.data();
+        var.namesize = keyEfi.size() * sizeof(efi_char);
+        var.vendor   = this->vendor;
+        var.attrib   = 0;
+        var.data     = nullptr;
+        var.datasize = 0;
         if (ioctl(fd, EFIIOC_VAR_GET, &var) < 0) { return {}; }
         if (var.datasize == 0) { return {}; }
         std::vector<uint8_t> ret(var.datasize, 0);

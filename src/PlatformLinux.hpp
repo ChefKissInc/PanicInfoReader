@@ -30,7 +30,7 @@ public:
         }
 
         off_t size = lseek(fd, 0, SEEK_END);
-        if (size == (off_t)-1) {
+        if (size == static_cast<off_t>(-1)) {
             close(fd);
             throw std::runtime_error("Failed to seek NVRAM file. Error code: " + std::to_string(errno));
         }
@@ -43,7 +43,7 @@ public:
         size_t               dataSize = static_cast<size_t>(size) - 4;
         std::vector<uint8_t> ret(dataSize, 0);
 
-        if (lseek(fd, 4, SEEK_SET) == (off_t)-1) {
+        if (lseek(fd, 4, SEEK_SET) == static_cast<off_t>(-1)) {
             close(fd);
             throw std::runtime_error("Failed to seek past NVRAM attributes");
         }
