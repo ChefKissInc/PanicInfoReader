@@ -131,6 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      discussions: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -142,7 +143,11 @@ jobs:
           shopt -s nullglob
           files=(artifacts/*)
           [ ${#files[@]} -gt 0 ] || { echo "No files found"; exit 1; }
-          NOTES=$(awk '/^## '"${{ github.ref_name }}"'$/{flag=1; next} /^## v/{flag=0} flag' CHANGELOG.md | sed 's/^### /## /')
+          NOTES=$(awk -v ver="${{ github.ref_name }}" '
+            $0 ~ "^## " ver "([[:space:]]|$)" {flag=1; next}
+            /^## / {flag=0}
+            flag
+          ' CHANGELOG.md | sed 's/^### /## /')
 
           [ -n "$NOTES" ] || {
             echo "No changelog entry found for ${{ github.ref_name }}"
