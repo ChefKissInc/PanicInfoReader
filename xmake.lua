@@ -1,6 +1,8 @@
 add_rules("mode.debug", "mode.release", "mode.releasedbg")
 
+set_policy("build.progress_style", "multirow")
 set_policy("check.target_package_licenses", false)
+set_warnings("allextra", "error")
 
 if is_plat("windows") then
 	add_requires("libplist", { configs = { toolchains = { "clang-cl" } } })
@@ -9,23 +11,11 @@ else
 end
 
 target("PanicInfoReader")
-    if not is_mode("debug") then
-        set_policy("build.optimization.lto", true)
-    end
     set_kind("binary")
     add_files("src/main.cpp")
     set_languages("cxx17")
     add_packages("libplist")
-    add_cxflags(
-        "-Wall",
-        "-Wextra",
-        "-Wpedantic",
-        "-Wsign-conversion",
-        "-Wold-style-cast",
-        "-Wshadow",
-        "-Wconversion",
-        "-Werror"
-    )
+    set_policy("build.optimization.lto", not is_mode("debug"))
     if is_plat("macosx") then
         add_frameworks("IOKit", "CoreFoundation")
     elseif is_plat("windows") then
